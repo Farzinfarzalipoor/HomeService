@@ -7,6 +7,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
+import java.sql.Blob;
 import java.util.*;
 
 @Entity
@@ -17,14 +18,15 @@ import java.util.*;
 @AllArgsConstructor
 public class Expert extends User {
 
-    private String photoURL;
+    @Lob
+    private Blob photoURL;
 
     @ManyToMany
     @Builder.Default
     @JoinTable(name = "expert_service")
     private Set<Service> services = new HashSet<>();
 
-    @OneToMany
+    @OneToMany(mappedBy = "expert")
     @JoinColumn(name = "comment_id")
     @Builder.Default
     private Set<Comment> comments = new HashSet<>();
