@@ -21,6 +21,8 @@ public class Expert extends User {
     @Lob
     private Blob photoURL;
 
+    private Double points;
+
     @ManyToMany
     @Builder.Default
     @JoinTable(name = "expert_service")
