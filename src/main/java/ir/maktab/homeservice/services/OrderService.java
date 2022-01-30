@@ -1,5 +1,6 @@
 package ir.maktab.homeservice.services;
 
+import ir.maktab.homeservice.entities.EvaluationInput;
 import ir.maktab.homeservice.entities.Offer;
 import ir.maktab.homeservice.entities.orders.Order;
 import ir.maktab.homeservice.entities.orders.OrderStatus;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -27,7 +29,7 @@ public class OrderService {
     OfferRepository offerRepository;
 
     @Autowired
-    ExpertRepository specialistRepository;
+    ExpertRepository expertRepository;
 
     @Autowired
     CustomerRepository customerRepository;
@@ -60,7 +62,7 @@ public class OrderService {
     public Order update(Long id, Order order) {
         Order a_order = orderRepository.findById(id).orElseThrow(OrderNotFoundException::new);
         SubService subAssistance = subServiceRepository
-                .findById(order.getSubService().getId()).orElseThrow(subServiceNotFoundException::new);
+                .findById(order.getSubService().getId()).orElseThrow(SubServiceNotFoundException::new);
         a_order.setSubService(subAssistance);
         a_order.setOfferedPrice(order.getOfferedPrice());
         a_order.setDescription(order.getDescription());
@@ -84,6 +86,66 @@ public class OrderService {
 
         return orderRepository.save(order);
     }
+    @Transactional
+    public Order pay(Long requestId){
+        Order request = orderRepository.findById(requestId).orElseThrow(() -> new OrderNotFoundException());
+        Offer selectedOffer = request.getSelectedOffer();
+        Expert expert = selectedOffer.getExpert();
+        Customer customer = request.getCustomer();
+        Double price = selectedOffer.getPrice();
+        if (request.getStatus()!= OrderStatus.DONE )
+            throw new InvalidOrderStatusException();
+        if (customer.getCredit() < price)
+            throw new OrderSettlementException("customer credit is not enough");
+        expert.setCredit(expert.getCredit() + price*.7);
+        customer.setCredit(customer.getCredit() - price);
+        request.setStatus(OrderStatus.PAID);
+        customerRepository.save(customer);
+        expertRepository.save(expert);
+        Order saved = orderRepository.save(request);
+        return saved;
+    }
+    @Transactional(readOnly = true)
+    public List<Order> findForExpert(Long expertId, Pageable pageable){
+        return new ArrayList<>(orderRepository.findForExpert(expertId, pageable));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Order> findByExpertId(Long expertId , OrderStatus status , Pageable pageable){
+        return orderRepository.findBySpecialistId(expertId , status , pageable).stream().collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Order> findByUserId(Long userId , Pageable pageable){
+        return orderRepository.findByUserId(userId, pageable, OrderStatus.DONE , OrderStatus.PAID).stream().collect(Collectors.toList());
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<Order> findByParameterMap(Map<String, String> parameterMap) {
+        return orderRepository.findByParameterMap(parameterMap).stream().collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Order> findByCustomerId(Long customerId, OrderStatus status, Pageable pageable) {
+        return orderRepository.findByCustomerId(customerId, status, pageable).stream().collect(Collectors.toList());
+    }
+
+
+    @Transactional
+    public Order evaluate(Long requestId, EvaluationInput inputDTO) {
+        Order request = orderRepository.findById(requestId).orElseThrow(() -> new OrderNotFoundException());
+        if (request.getStatus() != OrderStatus.DONE && request.getStatus() != OrderStatus.PAID)
+            throw new InvalidOrderEvaluationException();
+        Offer selectedOffer = request.getSelectedOffer();
+        Expert specialist = selectedOffer.getExpert();
+        request.setComment(inputDTO.getComment());
+        request.setPoints(inputDTO.getPoints());
+        Order saved = orderRepository.save(request);
+        expertRepository.updateExpertPoints(specialist.getId());
+        return saved;
+    }
+
 
     @Transactional
     public void removeById(Long requestId) {

@@ -14,7 +14,8 @@ import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.Objects;
 
-@MappedSuperclass
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 @Setter
 @Getter
 @SuperBuilder
@@ -44,7 +45,7 @@ public class User {
     private Date signupDate;
 
     @NotNull
-    private Role role;
+    protected Role role;
 
     @NotNull
     private UserStatus status;

@@ -17,9 +17,11 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Expert extends User {
+    {
+        role = Role.EXPERT;
+    }
 
-    @Lob
-    private Blob photoURL;
+    private String photoURL;
 
     private Double points;
 

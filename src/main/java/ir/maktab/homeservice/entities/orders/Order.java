@@ -31,6 +31,12 @@ public class Order {
     private SubService subService;
 
     @NotNull
+    private Long customerId;
+
+    @NotNull
+    private Long subServiceId;
+
+    @NotNull
     private Double offeredPrice;
 
     @NotNull

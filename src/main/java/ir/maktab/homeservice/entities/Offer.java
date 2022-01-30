@@ -20,6 +20,9 @@ public class Offer {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @NotNull
+    private Long expertId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private Expert expert;
 

@@ -8,15 +8,19 @@ import ir.maktab.homeservice.repositories.ExpertRepository;
 import ir.maktab.homeservice.repositories.OfferRepository;
 import ir.maktab.homeservice.repositories.OrderRepository;
 import ir.maktab.homeservice.repositories.SubServiceRepository;
-import ir.maktab.homeservice.services.exceptions.*;
+import ir.maktab.homeservice.services.exceptions.ExpertNotFoundException;
+import ir.maktab.homeservice.services.exceptions.LowBasePriceException;
+import ir.maktab.homeservice.services.exceptions.OfferNotFoundException;
+import ir.maktab.homeservice.services.exceptions.OrderNotFoundException;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OfferService {
@@ -69,6 +73,23 @@ public class OfferService {
         a_offer.setExecutionPeriod(offer.getExecutionPeriod());
         a_offer.setStartDate(offer.getStartDate());
         return offerRepository.save(a_offer);
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<Offer> findByRequestIdOrderByPointsDesc(Long requestId , Pageable pageable){
+        return offerRepository.findAll((r,q,cb)-> {
+                    q.orderBy(cb.desc(r.get("expert").get("points") ));
+                    return cb.equal(r.get("order").get("id"), requestId);}, pageable )
+                .stream().collect(Collectors.toList()) ;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Offer> findByRequestIdOrderByPriceAsc(Long requestId , Pageable pageable) {
+        return offerRepository.findAll((r,q,cb)-> {
+            q.orderBy(cb.asc(r.get("price") ));
+            return cb.equal(r.get("request").get("id"), requestId);}, pageable )
+                .stream().collect(Collectors.toList()) ;
     }
 
     @Transactional

@@ -19,6 +19,9 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Customer extends User {
+    {
+        role = Role.CUSTOMER;
+    }
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "customer_id")
     @Builder.Default

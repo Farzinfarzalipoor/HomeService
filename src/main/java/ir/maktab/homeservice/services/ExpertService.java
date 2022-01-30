@@ -33,6 +33,14 @@ public class ExpertService {
         return expertRepository.findById(customerId).orElseThrow(ExpertNotFoundException::new);
     }
 
+    @Transactional
+    public Expert changePhotoUrl(Long specialistId, String url) {
+        Expert expert = expertRepository.findById(specialistId).orElseThrow(ExpertNotFoundException::new);
+        expert.setPhotoURL(url);
+        Expert saved = expertRepository.save(expert);
+        return saved;
+    }
+
     @Transactional(readOnly = true)
     public Expert findById(Long specialistId) {
         return expertRepository.findById(specialistId).orElseThrow(ExpertNotFoundException::new);

@@ -5,7 +5,7 @@ import ir.maktab.homeservice.entities.services.SubService;
 import ir.maktab.homeservice.repositories.ServiceRepository;
 import ir.maktab.homeservice.repositories.SubServiceRepository;
 import ir.maktab.homeservice.services.exceptions.ServiceNotFoundException;
-import ir.maktab.homeservice.services.exceptions.subServiceNotFoundException;
+import ir.maktab.homeservice.services.exceptions.SubServiceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +36,7 @@ public class SubServiceService {
     public SubService findById(Long serviceId, Long subServiceId) {
         SubService subAssistance = subServiceRepository
                 .findByAssistanceIdAndSubAssistanceId(serviceId, subServiceId)
-                .orElseThrow(subServiceNotFoundException::new);
+                .orElseThrow(SubServiceNotFoundException::new);
         return subAssistance;
     }
 
@@ -56,7 +56,7 @@ public class SubServiceService {
     public SubService update(Long serviceId, Long subServiceId, SubService subService) {
         SubService a_subService = subServiceRepository
                 .findByAssistanceIdAndSubAssistanceId(serviceId, subServiceId)
-                .orElseThrow(subServiceNotFoundException::new);
+                .orElseThrow(SubServiceNotFoundException::new);
         a_subService.setTitle(subService.getTitle());
         a_subService.setDescription(subService.getDescription());
         a_subService.setBasePrice(subService.getBasePrice());
@@ -67,7 +67,7 @@ public class SubServiceService {
     public void removeById(Long serviceId, Long subServiceId) {
         SubService subAssistance = subServiceRepository
                 .findByAssistanceIdAndSubAssistanceId(serviceId, subServiceId)
-                .orElseThrow(subServiceNotFoundException::new);
+                .orElseThrow(SubServiceNotFoundException::new);
         subServiceRepository.deleteById(subAssistance.getId());
     }
 }
